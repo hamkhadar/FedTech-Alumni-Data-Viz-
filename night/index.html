@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<head>
+  <script src="https://d3js.org/d3.v3.min.js" charset="utf-8"></script> <!--D3 Library Import-->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.0.0/jquery.min.js"> </script> <!--JQuery Library Import-->
+  <link rel="stylesheet" type="text/css" href="style.css"> <!--External CSS Import-->
+  <link href='https://fonts.googleapis.com/css?family=Roboto:400,300,500,100' rel='stylesheet' type='text/css'> <!-- Import Roboto Font -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous"> <!-- Import Bootstrap -->
+  <script src="https://d3js.org/topojson.v1.min.js"></script> <!-- Import map JSON -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@300&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@500&display=swap" rel="stylesheet">
+
+
+
+
+<style>
+
+@import url('https://fonts.googleapis.com/css2?family=Raleway:wght@500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Raleway:wght@300&display=swap');
+
+nav {
+  display: flex;
+}
+
+nav ul {
+  display: flex;
+  align-items: center;
+  font-variant: all-small-caps;
+  font-family: 'Raleway', sans-serif;
+  margin-top: 0;
+  margin-bottom: 0;
+  padding: 5px 10 10px 10px;
+}
+
+nav li {
+  list-style: none;
+}
+.my-legend .legend-title {
+  text-align: left;
+  margin-bottom: 8px;
+  font-weight: bold;
+  font-family: 'Raleway', sans-serif;
+  font-size: 90%;
+  }
+.my-legend .legend-scale ul {
+  margin: 0;
+  padding: 0;
+  float: left;
+  list-style: none;
+  }
+.my-legend .legend-scale ul li {
+  display: block;
+  float: left;
+  width: 50px;
+  margin-bottom: 6px;
+  text-align: center;
+  font-size: 80%;
+  list-style: none;
+  }
+.my-legend ul.legend-labels li span {
+  display: block;
+  float: left;
+  height: 15px;
+  width: 50px;
+  }
+.my-legend .legend-source {
+  font-size: 70%;
+  color: #999;
+  clear: both;
+  }
+.my-legend a {
+  color: #777;
+  }
+
+  .col-xs-12 img {
+   float: left;
+   width: 100px;
+   height: 100px;
+ }
+ .footer img {
+  float: right;
+  width: 100px;
+  height: 100px;
+}
+
+
+</style>
+
+</head>
+
+<body>
+    <header>
+
+      <nav>
+        <ul>
+          <li class="top"><a href="index.html">Map</a></li>
+          <li class="top"><a href="bubble.html">Bubble</a></li>
+        </ul>
+      </nav>
+    </header>
+
+</body>
+<div class="container">
+    <div class="row title-row">
+        <div class="col-xs-12" id="title">
+            <img src="fedtech.png" alt="logo" />
+
+            <h1 class="center">FedTech Accelerator Program Alumni Companies</h1>
+            <p class="center">xTech3, xTech4, xTech5, ORNL2, ORNL3, ORNL4, Innovation Combine 1, Innovation Combine 2</p>
+
+
+
+        </div>
+    </div>
+    <div class='my-legend'>
+    <div class='legend-title'>Alumni Mapping</div>
+    <div class='legend-scale'>
+      <ul class='legend-labels'>
+        <li><span style='background:#B32E3D;'></span>XTECH</li>
+        <li><span style='background:#570091;'></span>ORNL</li>
+        <li><span style='background:#0000AA;'></span>IC</li>
+      </ul>
+    </div>
+    </div>
+    <div class="row interactive-map">
+        <div class="col-xs-12" id="mvp-picker"></div>
+
+    </div>
+    <div class="row player-visualizations">
+        <div class="col-xs-12" id="mvp-stats"></div>
+    </div>
+
+</div>
+
+</body>
+
+<script>
+
+//Setting up the map
+var width = 1600,
+  height = 500,
+  scale0 = (width - 1) / 2 / Math.PI;
+
+var projection = d3.geo.mercator()
+.scale(900);
+
+
+//sets up zooming behavior
+var zoom = d3.behavior.zoom()
+  .translate([width / 2, height / 2])
+  .scale(scale0)
+  .scaleExtent([scale0, 24 * scale0])
+  .on("zoom", zoomed);
+
+var path = d3.geo.path()
+  .projection(projection);
+
+var svg = d3.select("#mvp-picker").append("svg")
+  .attr("width", width)
+  .attr("height", height)
+  .attr("class", "map");
+
+var g = svg.append("g");
+
+var tip = d3.select(".interactive-map").append("div")
+  .attr("class", "tooltip")
+  .style("opacity", 0);
+
+svg.append("rect")
+  .attr("class", "overlay")
+  .attr("width", width)
+  .attr("height", height);
+
+svg.call(zoom).call(zoom.event);
+
+//draws map
+d3.json("resources/us.json", function(error, world) {
+  if (error) throw error;
+  g.append("path")
+    .datum({ type: "Sphere" })
+    .attr("class", "sphere")
+    .attr("d", path)
+  g.append("path")
+    .datum(topojson.merge(world, world.objects.counties.geometries))
+    .attr("class", "land")
+    .attr("d", path);
+  g.append("path")
+    .datum(topojson.mesh(world, world.objects.counties, function(a, b) { return a !== b;}))
+    .attr("class", "boundary")
+    .attr("d", path);
+
+
+});
+
+
+
+//removes instructions on click
+d3.select("#instructions-close").on("click", function() {
+  d3.select("#instructions").remove();
+});
+
+
+function zoomed() {
+  projection.translate(zoom.translate()).scale(zoom.scale());
+
+  g.selectAll("path")
+    .attr("d", path);
+
+  svg.selectAll("image")
+  .attr("x", function(d) {
+    return projection([d.Longitude, d.Latitude])[0];
+  }).attr("y", function(d) {
+    return projection([d.Longitude, d.Latitude])[1];
+  });
+}
+
+//helps fix some height variability issues with bootstrap
+d3.select(self.frameElement).style("height", height + "px");
+
+//variable used for testing outside in the console occasionally
+var mvp_data;
+
+d3.csv("data/alumni_list.csv", function(error, rows) {
+
+  mvp_data = rows;
+
+  //Removes duplicate entries for subsets of the data
+  function remove_duplicates(field, optArray) {
+    var mvp_data = rows;
+    if (optArray) { mvp_data = optArray }
+    mvp_data_copy = [];
+    var set = new Set();
+    if (Object.keys(mvp_data[0]).indexOf(field)==-1) {throw "Invalid Field";}
+    for (var k = 0; k < mvp_data.length; k++) {
+      if (!set.has(mvp_data[k][field])) {
+        mvp_data_copy.push(mvp_data[k]);
+        set.add(mvp_data[k][field]);
+      }
+    }
+    return mvp_data_copy;
+  }
+
+  //Gets unique players (need ids for later)
+  var playerPointsNoDup =
+    svg.selectAll(".playerPoints").data(remove_duplicates("Player"), function(d) { return d.ID; });
+
+  //adds players to map and adds data (in a hacky way through attributes)
+  playerPointsNoDup
+    .enter().append("image")
+    .attr("x", function(d) {return projection([d.Longitude, d.Latitude])[0];})
+    .attr("y", function(d) {return projection([d.Longitude, d.Latitude])[1];})
+    .attr("name", function(d) {return d.Player;})
+    .attr("hometown", function(d) {return d.Hometown;})
+    .attr("age", function(d) {return d.Age;})
+    .attr("pheight", function(d) {return d.Height;})
+    .attr("weight", function(d) {return d.Weight;})
+    .attr("team", function(d) {return d.Team;})
+    .attr("college", function(d) {return d.College;})
+    .attr("salary", function(d) {return d.Salary;})
+    .attr("position", function(d) {return d.Position;})
+    .attr("league", function(d) {return d.League;})
+    .attr("season", function(d) {return d.Season;})
+    .attr("width", 30)
+    .attr("height", 30)
+    .style("opacity", "0.59")
+    .attr("xlink:href", function (d) {return "resources/images/" + d.League.toLowerCase() + ".png";});
+
+  //adds tooltips to players (with info from attributes)
+  playerPointsNoDup.on('mouseover', function() {
+    var curr = d3.select(this);
+    curr.style("opacity", "0.7");
+    var name = curr.attr("name");
+    var age = curr.attr("age");
+    var hometown = curr.attr("hometown");
+    var salary = curr.attr("salary");
+    var weight = curr.attr("weight");
+    var playerHeight = curr.attr("pheight");
+    var team = curr.attr("team");
+    var college = curr.attr("college");
+    var position = curr.attr("position");
+
+    tip.transition().duration(200).style("opacity", .9);
+
+    tip.html("<img src='resources/images/player-photos/" + name.toLowerCase().split(' ').join('_') + ".jpg'" +
+        "style='float: left;',  height=160, width=130> <h4>" +
+        name + "</h4>" + "<br/>" +
+        "<strong><u>Program:</u></strong>  " + hometown + "<br/>" +
+        "<strong><u>Website:</u></strong>  " + team + "<br/>" +
+        "<strong><u>Description:</u></strong>  " + position + "<br/>" +
+        "<strong><u>TRL:</u></strong>  " + age + "<br/>" +
+        "<strong><u>Tech Area:</u></strong>  " + playerHeight + "<br/>" +
+        "<strong><u>Location:</u></strong>  " + weight + " <br/>")
+      .style("left", (d3.event.pageX) + "px")
+      .style("top", (d3.event.pageY - 28) + "px");
+  });
+
+  //removes tooltip
+  playerPointsNoDup.on('mouseout', function() {
+    d3.select(this).style("opacity", "0.8");
+    svg.select("#playerLabel").remove();
+    tip.transition().duration(500).style("opacity", 0);
+  });
+
+
+});
+</script>
+
+<div class="footer">
+    <img src="fedtech.png" />
+</div>
+
+     <!-- <div class="footer">
+       <img src=fedtech.png" alt="logo"/>
+     </div> -->
+
+</html>
