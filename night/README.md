@@ -1,19 +1,9 @@
-INFO 3300 - Project 2 - Cornell University
+Acceleator Program Alumni Companies  - FedTech
 ===================
 
-<a href="https://chrisjtraver.github.io/info3300-project2">Visualization</a> | <a href="https://chrisjtraver.github.io/info3300-project2/ProjectWriteup.pdf"> Written Description</a>
-
-For this project we were tasked with creating an interactive data visualization. Our interface uses dynamic elements to show more 
-information than can be presented in a single view. We follow Shneiderman's formula of "overview first, zoom and filter, then details
-on demand."
-
-## Group Members
-1. Christopher Traver - <a href="https://github.com/chrisjtraver">GitHub</a>
-2. Christopher Vrabel - <a href="https://github.com/cvrabel">GitHub</a>
-3. Rohit Biswas
+For this project I was tasked with creating an interactive data visualization. This interface uses dynamic elements to show more 
+information than can be presented in a single view. The FedTech Accelerator program alumni companies are mapped out in a geographic mercator map, and can be zoomed in on and hovered over for more detailed information. Additionally, a few other supporting visualizations were made to present other metrics about alumni cohorts!
 
 ## Credits
 * <a href="https://d3js.org">D3.js</a>
-* <a href="http://reference.com">Reference.com for Statistics</a>
-* <a href="http://www.mapdevelopers.com/batch_geocode_tool.php">Google Maps Batch Geocode Tool</a>
-* <a href="http://bl.ocks.org">World Map JSON</a>
+* <a href="http://bl.ocks.org">US Map JSON</a>
