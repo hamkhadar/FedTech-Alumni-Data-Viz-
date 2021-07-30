@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+
+<head>
+  <script src="https://d3js.org/d3.v4.min.js"></script>
+  <script src="https://d3js.org/topojson.v2.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/d3-tip/0.9.1/d3-tip.js"></script>
+  <!--D3 Library Import-->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.0.0/jquery.min.js"> </script>
+  <!--JQuery Library Import-->
+  <link rel="stylesheet" type="text/css" href="style.css">
+  <!--External CSS Import-->
+  <link href='https://fonts.googleapis.com/css?family=Roboto:400,300,500,100' rel='stylesheet' type='text/css'>
+  <!-- Import Roboto Font -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css"
+    integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+  <!-- Import Bootstrap -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@300&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@500&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Raleway:wght@500&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Raleway:wght@300&display=swap');
+
+    nav {
+      display: flex;
+    }
+
+    nav ul {
+      display: flex;
+      align-items: center;
+      font-variant: all-small-caps;
+      font-family: 'Raleway', sans-serif;
+      margin-top: 0;
+      margin-bottom: 0;
+      padding: 5px 10 10px 10px;
+    }
+
+    nav li {
+      list-style: none;
+    }
+
+    .my-legend .legend-title {
+      text-align: left;
+      margin-bottom: 8px;
+      font-weight: bold;
+      font-family: 'Raleway', sans-serif;
+      font-size: 90%;
+    }
+
+    .my-legend .legend-scale ul {
+      margin: 0;
+      padding: 0;
+      float: left;
+      list-style: none;
+    }
+
+    .my-legend .legend-scale ul li {
+      display: block;
+      float: left;
+      width: 50px;
+      margin-bottom: 6px;
+      text-align: center;
+      font-size: 80%;
+      list-style: none;
+    }
+
+    .my-legend ul.legend-labels li span {
+      display: block;
+      float: left;
+      height: 15px;
+      width: 50px;
+    }
+
+    .my-legend .legend-source {
+      font-size: 70%;
+      color: #999;
+      clear: both;
+    }
+
+    .my-legend a {
+      color: #777;
+    }
+
+    .my-legend {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+    }
+
+    .map-checkbox {
+      margin: 20px;
+      display: flex;
+      flex-direction: row;
+    }
+
+    .map-checkbox div {
+      margin-right: 10px;
+    }
+
+    .col-xs-12 img {
+      float: left;
+      width: 100px;
+      height: 100px;
+    }
+
+    .footer img {
+      float: right;
+      width: 100px;
+      height: 100px;
+    }
+
+    .county {
+      fill: none;
+      stroke: #fff;
+      stroke-width: 0.1px;
+      stroke-opacity: 0.1;
+
+    }
+
+    .state {
+      stroke: white;
+      stroke-width: 0.2px;
+      fill: rgb(80, 80, 80);
+    }
+
+    svg {
+      background-color: #a1b1da;
+      width: 97%;
+      margin-left:auto; margin-right:auto; display:block;
+    }
+
+    .search {
+      border: 0.1px #9696b4 solid;
+      padding: 5px;
+      margin: 5px;
+      border-radius: 5px;
+      color: #64648b;
+    }
+
+    #autocomplete-list {
+      position: absolute;
+    }
+
+    #autocomplete-list div {
+      background-color: white;
+      border: 1px black solid;
+      margin-top: -1px;
+      padding: 10px 5px
+    }
+
+    .autocomplete-items div {
+      padding: 10px;
+      cursor: pointer;
+      background-color: #fff;
+      border-bottom: 1px solid #d4d4d4;
+    }
+
+    .autocomplete-items div:hover {
+      /*when hovering an item:*/
+      background-color: #e9e9e9;
+      cursor: pointer;
+    }
+
+    .autocomplete-active {
+      /*when navigating through the items using the arrow keys:*/
+      background-color: DodgerBlue !important;
+      color: #ffffff;
+    }
+
+    .search input {
+      padding: 5px;
+      border: 0px;
+    }
+
+    .search input:focus {
+      outline: none;
+    }
+
+    .search button {
+      padding: 5px 10px;
+      background-color: #f5f5ff;
+      border: 0px;
+      color: #64648c;
+    }
+  </style>
+
+</head>
+
+<body>
+  <header>
+
+    <nav>
+      <ul>
+        <li class="top"><a href="index.html">Map</a></li>
+        <li class="top"><a href="bubble.html">Bubble</a></li>
+      </ul>
+    </nav>
+  </header>
+
+</body>
+<div class="container">
+  <div class="row title-row">
+    <div class="col-xs-12" id="title">
+      <img src="fedtech.png" alt="logo" />
+
+      <h1 class="center">FedTech Accelerator Program Alumni Companies</h1>
+      <p class="center">xTech3, xTech4, xTech5, ORNL2, ORNL3, ORNL4, Innovation Combine 1, Innovation Combine 2</p>
+
+
+
+    </div>
+  </div>
+  <div class='my-legend'>
+    <div>
+      <div class='legend-title'>Alumni Mapping</div>
+      <div class='legend-scale'>
+        <ul class='legend-labels'>
+          <li><span style='background:#f0443c;'></span>xTech</li>
+          <li><span style='background:#489c34;'></span>Oak Ridge National Laboratories</li>
+          <li><span style='background:#f0b444;'></span>Innovation Combine</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="map-checkbox">
+      <div>
+
+        <input type="checkbox" id="checkboxXtech" name="XTech" value="XTech" onclick="populateDataPointsOnMap()">
+        <label for="checkboxXtech">XTECH</label><br>
+      </div>
+      <div>
+        <input type="checkbox" id="checkboxOrnl" name="Ornl" value="Ornl" onclick="populateDataPointsOnMap()">
+        <label for="checkboxOrnl">ORNL</label><br>
+      </div>
+      <div>
+        <input type="checkbox" id="checkboxIc" name="Ic" value="Ic" onclick="populateDataPointsOnMap()">
+        <label for="checkboxIc">IC</label><br>
+      </div>
+    </div>
+
+    <div class="search">
+      <span><i class="fa fa-search" aria-hidden="true"></i></span>
+      <input class="search-state" type="text" placeholder="Enter state name" ;>
+      <button id="search-state-button">Search</button>
+    </div>
+  </div>
+  <div class="interactive-map">
+    <svg></svg>
+  </div>
+  <div class="row company-visualizations">
+    <div class="col-xs-12" id="company-stats"></div>
+  </div>
+
+</div>
+
+</body>
+
+<script>
+
+  var width = document.documentElement.clientWidth;
+  let height = width * 0.618;
+
+  var isZoomed = false;
+  var globalTransform;
+
+  let tip = d3.tip()
+    .attr('class', 'd3-tip d3-tip-world')
+    .style("z-index", 1000)
+    .attr("pointer-events", "none")
+    .style("background-color", "white")
+    .style("border", "solid")
+    .offset([-10, 10])
+    .style("border-width", "1px")
+    .style("width", "200px")
+    .style("padding", "5px")
+    .style("font-size", "11px")
+    .style("text-align", "center")
+    .html(function (d) {
+
+      var imageUrl
+      var imageUrlOnError
+      // var image = new Image();
+      imageUrl = "resources/images/alumni-photos/" + d.Player.toLowerCase().split(' ').join('_') + ".jpg";
+      switch (d.League.toLowerCase()) {
+        case "xtech":
+          imageUrlOnError = "resources/images/default-logos/xtech_logo.png";
+          break;
+        case "ornl":
+          imageUrlOnError = "resources/images/default-logos/ornl_logo.jpeg";
+          break;
+        case "ic":
+          imageUrlOnError = "resources/images/default-logos/ic_logo.png";
+          break;
+        default:
+          break;
+        }
+          // if (image.width != 0) {
+          //   imageUrl = "resources/images/alumni-photos/" + d.Player.toLowerCase().split(' ').join('_') + ".jpg";
+          // } else {
+          //     // code block
+          //   }
+          // }
+
+
+
+          var html = "<img src='" + imageUrl + "' onerror=\"this.src='" + imageUrlOnError+"';\" width=130>" +
+            "<h3 style=\"margin:0\">" + d.Player + "</h3>" +
+            "<p style=\"margin:0\"> Program : " + d.Hometown + "</p>" +
+            "<p style=\"margin:0\"> Website : <span><a style = \" white-space:nowrap; \" href=" + d.Team + ">" + d.Team + "</a></span></p>" +
+            "<p style=\"margin:0\"> Description : " + d.Position + "</p>" +
+            "<p style=\"margin:0\"> TRL : " + d.Age + "</p>" +
+            "<p style=\"margin:0\"> Tech Area : " + d.Height + "</p>" +
+            "<p style=\"margin:0\"> Location : " + d.Weight + "</p>";
+
+          return html;
+      })
+
+  const zoom = d3.zoom()
+    .scaleExtent([1, 8])
+    .on('zoom', zoomed);
+
+
+  function autocomplete(inp, arr) {
+    /*the autocomplete function takes two arguments,
+    the text field element and an array of possible autocompleted values:*/
+    var currentFocus;
+    /*execute a function when someone writes in the text field:*/
+    inp.addEventListener("input", function (e) {
+      var a, b, i, val = this.value;
+      /*close any already open lists of autocompleted values*/
+      closeAllLists();
+      if (!val) { return false; }
+      currentFocus = -1;
+      /*create a DIV element that will contain the items (values):*/
+      a = document.createElement("DIV");
+      a.setAttribute("id", this.id + "autocomplete-list");
+      a.setAttribute("class", "autocomplete-items");
+      /*append the DIV element as a child of the autocomplete container:*/
+      this.parentNode.appendChild(a);
+      /*for each item in the array...*/
+      for (i = 0; i < arr.length; i++) {
+        /*check if the item starts with the same letters as the text field value:*/
+        if (arr[i].substr(0, val.length).toUpperCase() == val.toUpperCase()) {
+          /*create a DIV element for each matching element:*/
+          b = document.createElement("DIV");
+          /*make the matching letters bold:*/
+          b.innerHTML = "<strong>" + arr[i].substr(0, val.length) + "</strong>";
+          b.innerHTML += arr[i].substr(val.length);
+          /*insert a input field that will hold the current array item's value:*/
+          b.innerHTML += "<input type='hidden' value='" + arr[i] + "'>";
+          /*execute a function when someone clicks on the item value (DIV element):*/
+          b.addEventListener("click", function (e) {
+            /*insert the value for the autocomplete text field:*/
+            inp.value = this.getElementsByTagName("input")[0].value;
+            /*close the list of autocompleted values,
+            (or any other open lists of autocompleted values:*/
+            closeAllLists();
+          });
+          a.appendChild(b);
+        }
+      }
+    });
+    /*execute a function presses a key on the keyboard:*/
+    inp.addEventListener("keydown", function (e) {
+      var x = document.getElementById(this.id + "autocomplete-list");
+      if (x) x = x.getElementsByTagName("div");
+      if (e.keyCode == 40) {
+        /*If the arrow DOWN key is pressed,
+        increase the currentFocus variable:*/
+        currentFocus++;
+        /*and and make the current item more visible:*/
+        addActive(x);
+      } else if (e.keyCode == 38) { //up
+        /*If the arrow UP key is pressed,
+        decrease the currentFocus variable:*/
+        currentFocus--;
+        /*and and make the current item more visible:*/
+        addActive(x);
+      } else if (e.keyCode == 13) {
+        /*If the ENTER key is pressed, prevent the form from being submitted,*/
+        e.preventDefault();
+        if (currentFocus > -1) {
+          /*and simulate a click on the "active" item:*/
+          if (x) x[currentFocus].click();
+        }
+      }
+    });
+    function addActive(x) {
+      /*a function to classify an item as "active":*/
+      if (!x) return false;
+      /*start by removing the "active" class on all items:*/
+      removeActive(x);
+      if (currentFocus >= x.length) currentFocus = 0;
+      if (currentFocus < 0) currentFocus = (x.length - 1);
+      /*add class "autocomplete-active":*/
+      x[currentFocus].classList.add("autocomplete-active");
+    }
+    function removeActive(x) {
+      /*a function to remove the "active" class from all autocomplete items:*/
+      for (var i = 0; i < x.length; i++) {
+        x[i].classList.remove("autocomplete-active");
+      }
+    }
+    function closeAllLists(elmnt) {
+      /*close all autocomplete lists in the document,
+      except the one passed as an argument:*/
+      var x = document.getElementsByClassName("autocomplete-items");
+      for (var i = 0; i < x.length; i++) {
+        if (elmnt != x[i] && elmnt != inp) {
+          x[i].parentNode.removeChild(x[i]);
+        }
+      }
+    }
+    /*execute a function when someone clicks in the document:*/
+    document.addEventListener("click", function (e) {
+      closeAllLists(e.target);
+    });
+  }
+
+  function populateDataPointsOnMap() {
+
+    var xTechCheckBox = document.getElementById("checkboxXtech");
+    var ornlCheckBox = document.getElementById("checkboxOrnl");
+    var icCheckBox = document.getElementById("checkboxIc");
+
+    d3.csv("data/alumni_list.csv", function (rows) {
+
+      var companies_data = rows;
+      //Removes duplicate entries for subsets of the data
+      function remove_duplicates(field, optArray) {
+        var companies_data = rows;
+        if (optArray) { companies_data = optArray }
+        companies_data_copy = [];
+        var set = new Set();
+        if (Object.keys(companies_data[0]).indexOf(field) == -1) { throw "Invalid Field"; }
+        for (var k = 0; k < companies_data.length; k++) {
+          if (!set.has(companies_data[k][field])) {
+            companies_data_copy.push(companies_data[k]);
+            set.add(companies_data[k][field]);
+          }
+        }
+        return companies_data_copy;
+      }
+
+      var companies_data_duplicates_removed = remove_duplicates("Player");
+
+
+
+      companies_data_duplicates_removed = companies_data_duplicates_removed.filter(el => {
+
+        if (xTechCheckBox.checked && el.League.toLowerCase() == "xtech") {
+          return el;
+        }
+        if (ornlCheckBox.checked && el.League.toLowerCase() == "ornl") {
+          return el;
+        }
+        if (icCheckBox.checked && el.League.toLowerCase() == "ic") {
+          return el;
+        }
+      })
+
+      console.log(companies_data_duplicates_removed)
+
+      svg.selectAll(".location-circles").remove();
+
+      var companyNoDup =
+        svg.append("g")
+          .attr("class", "location-circles zoomable-element")
+          .selectAll(".playerPoints")
+          .data(companies_data_duplicates_removed);
+
+      //adds players to map and adds data (in a hacky way through attributes)
+      companyNoDup
+        .enter().append("image")
+        .attr("transform", function (d) {
+          return "translate(" + projection([d.Longitude, d.Latitude]) + ")";
+        })
+        // .attr("y", function (d) { return projection.invert([d.Longitude, d.Latitude])[1]; })
+        .attr("name", function (d) { return d.Player; })
+        .attr("hometown", function (d) { return d.Hometown; })
+        .attr("age", function (d) { return d.Age; })
+        .attr("pheight", function (d) { return d.Height; })
+        .attr("weight", function (d) { return d.Weight; })
+        .attr("team", function (d) { return d.Team; })
+        .attr("college", function (d) { return d.College; })
+        .attr("salary", function (d) { return d.Salary; })
+        .attr("position", function (d) { return d.Position; })
+        .attr("league", function (d) { return d.League; })
+        .attr("season", function (d) { return d.Season; })
+        .attr("width", 30)
+        .attr("height", 30)
+        .style("opacity", "0.59")
+        .attr("xlink:href", function (d) {
+          return "resources/images/" + d.League.toLowerCase() + ".png";
+        })
+        .on('mouseover', function (d) {
+          d3.select(".d3-tip")
+            .style("top", d3.event.pageY + 10 + "px")
+            .style("left", d3.event.pageX + 10 + "px")
+          d3.select(".d3-tip")
+            .transition().style("opacity", "1")
+          tip.show(d);
+        })
+        .on('mouseout', function (d) {
+          d3.select(".d3-tip").transition().duration(1000).style("opacity", "0").each("end", tip.hide);
+        });
+      d3.select(".d3-tip").on('mouseover', function (d) {
+        if (!d3.select(".d3-tip").transition().style("visibility") == "hidden") {
+          d3.select(".d3-tip").transition().style("opacity", "1");
+        }
+      }).on('mouseout', function (d) {
+        d3.select(".d3-tip").transition().duration(1000).style("opacity", "0").each("end", tip.hide);
+      });
+    })
+
+  }
+
+  function zoomed() {
+
+    if (!isZoomed) {
+      var transform = d3.zoomTransform(this);
+
+      svg
+        .selectAll('path') // To prevent stroke width from scaling
+        .attr('transform', d3.event.transform);
+      svg
+        .selectAll('.location-circles') // To prevent stroke width from scaling
+        .attr('transform', d3.event.transform);
+      svg
+        .selectAll('.location-circles image')
+        .attr("width", 30 / transform.k)
+        .attr("height", 30 / transform.k)
+    }
+  }
+
+  var svg = d3.select("svg")
+    .attr("width", width)
+    .attr("height", height)
+    .attr("preserveAspectRatio", "xMinYMin meet")
+    .attr("viewBox", `0 0 ${width} ${height}`)
+    .call(tip)
+    .call(zoom);
+
+  var projection = d3.geoAlbersUsa()
+    .translate([width / 2, height / 2])
+    .scale(width);
+
+  var path = d3.geoPath()
+    .projection(projection);
+
+  var stateNames = []
+
+  d3.json("resources/us_withstates.json", function (error, us) {
+    if (error) throw error;
+
+    var states = topojson.feature(us, us.objects.states).features;
+
+
+
+    states.forEach(element => {
+      stateNames.push(element.properties.name)
+    });
+
+    autocomplete(document.querySelector(".search-state"), stateNames);
+
+    document.getElementById("search-state-button").addEventListener("click", zoomInToState);
+
+    document.querySelector(".search-state").addEventListener("keyup", function (event) {
+      if (event.keyCode === 13) {
+        event.preventDefault();
+        document.getElementById("search-state-button").click();
+      }
+    });
+    document.querySelector(".search-state").value = ""
+    function zoomInToState() {
+
+      var selectedState = document.querySelector(".search-state").value;
+
+      var pathBbox = (document.querySelector("path.state-" + selectedState.split(" ").join("-"))).getBBox();
+      var bounds = [
+        [pathBbox.x, pathBbox.y],
+        [pathBbox.x + pathBbox.width, pathBbox.y + pathBbox.height]
+      ];
+      var dx = bounds[1][0] - bounds[0][0],
+        dy = bounds[1][1] - bounds[0][1],
+        x = (bounds[0][0] + bounds[1][0]) / 2,
+        y = (bounds[0][1] + bounds[1][1]) / 2,
+        scale = .9 / Math.max(dx / width, dy / height),
+        translate = [width / 2 - scale * x, height / 2 - scale * y];
+
+      svg.selectAll('.zoomable-element').transition()
+        .duration(750)
+        .attr("transform", "translate(" + translate + ")scale(" + scale + ")");
+
+      svg
+        .selectAll('.location-circles image')
+        .transition()
+        .duration(750)
+        .attr("width", 30 / scale)
+        .attr("height", 30 / scale)
+      isZoomed = true;
+    }
+
+
+    svg.selectAll(".state")
+      .data(states)
+      .enter().append("path")
+      .attr("d", path)
+      .attr("class", function (d) {
+        return "state zoomable-element state-" + d.properties.name.split(" ").join("-")
+      });
+
+
+    d3.selectAll("path.state")
+      .on("click", function (d) {
+        if (isZoomed) {
+
+
+          var scale = 1,
+            translate = [0, 0];
+          svg.selectAll('.zoomable-element').transition()
+            .duration(750)
+            .attr("transform", "translate(" + translate + ")scale(" + scale + ")");
+          svg
+            .selectAll('.location-circles image')
+            .transition()
+            .duration(750)
+            .attr("width", 30 / scale)
+            .attr("height", 30 / scale)
+          isZoomed = false;
+
+        } else {
+          var bounds = path.bounds(d),
+            dx = bounds[1][0] - bounds[0][0],
+            dy = bounds[1][1] - bounds[0][1],
+            x = (bounds[0][0] + bounds[1][0]) / 2,
+            y = (bounds[0][1] + bounds[1][1]) / 2,
+            scale = .9 / Math.max(dx / width, dy / height),
+            translate = [width / 2 - scale * x, height / 2 - scale * y];
+
+          svg.selectAll('.zoomable-element').transition()
+            .duration(750)
+            .attr("transform", "translate(" + translate + ")scale(" + scale + ")");
+
+          svg
+            .selectAll('.location-circles image')
+            .transition()
+            .duration(750)
+            .attr("width", 30 / scale)
+            .attr("height", 30 / scale)
+          isZoomed = true;
+        }
+      })
+
+    var counties = topojson.feature(us, us.objects.counties).features;
+
+    svg.selectAll(".county")
+      .data(counties)
+      .enter().append("path")
+      .attr("class", "county zoomable-element")
+      .attr("d", path);
+
+    document.getElementById("checkboxXtech").checked = true;
+    document.getElementById("checkboxOrnl").checked = true;
+    document.getElementById("checkboxIc").checked = true;
+
+
+    populateDataPointsOnMap();
+  });
+</script>
+
+<div class="footer">
+  <img src="fedtech.png" />
+</div>
+
+</html>
